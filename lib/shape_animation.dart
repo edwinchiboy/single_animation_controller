@@ -11,6 +11,10 @@ class _ShapeAnimationState extends State<ShapeAnimation>
     with SingleTickerProviderStateMixin {
   double posTop = 0;
   double posLeft = 0;
+  double maxTop = 0;
+  double maxLeft = 0;
+  final int ballSize = 100;
+  late Animation<double> animation;
   late Animation<double> animationTop;
   late Animation<double> animationLeft;
   late AnimationController controller;
@@ -21,12 +25,24 @@ class _ShapeAnimationState extends State<ShapeAnimation>
     controller = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
+    )..repeat(reverse: true);
+    // controller = AnimationController(
+    //   duration: const Duration(seconds: 3),
+    //   vsync: this,
+    // );
+    // animationLeft = Tween<double>(begin: 0, end: 200).animate(controller);
+    // animationTop = Tween<double>(begin: 0, end: 400).animate(controller)
+    //   ..addListener(() {
+    //     moveBall();
+    //   });
+
+    animation = CurvedAnimation(
+      parent: controller,
+      curve: Curves.easeInOut,
     );
-    animationLeft = Tween<double>(begin: 0, end: 200).animate(controller);
-    animationTop = Tween<double>(begin: 0, end: 400).animate(controller)
-      ..addListener(() {
-        moveBall();
-      });
+    animation.addListener(() {
+      moveBall();
+    });
   }
 
   @override
@@ -44,16 +60,30 @@ class _ShapeAnimationState extends State<ShapeAnimation>
             )
           ],
         ),
-        body: Stack(children: [
-          Positioned(left: posLeft, top: posTop, child: const Ball()),
-        ]));
+        body: SafeArea(child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+          maxLeft = constraints.maxWidth - ballSize;
+          maxTop = constraints.maxHeight - ballSize;
+          return Stack(children: [
+            AnimatedBuilder(
+                animation: controller,
+                child:
+                    Positioned(left: posLeft, top: posTop, child: const Ball()),
+                builder: (BuildContext context, Widget? child) {
+                  moveBall();
+                  return Positioned(left: posLeft, top: posTop, child: const Ball());
+                })
+          ]);
+        })));
   }
 
   void moveBall() {
-    setState(() {
-      posTop = animationTop.value;
-      posLeft = animationLeft.value;
-    });
+    // setState(() {
+    // posTop = animationTop.value;
+    // posLeft = animationLeft.value;
+    posTop = animation.value * maxTop;
+    posLeft = animation.value * maxLeft;
+    // });
   }
 }
 

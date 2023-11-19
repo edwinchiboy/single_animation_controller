@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_animation/shape_animation.dart';
 
-import 'my_animation.dart';
 
 void main() {
   runApp(MyApp());
